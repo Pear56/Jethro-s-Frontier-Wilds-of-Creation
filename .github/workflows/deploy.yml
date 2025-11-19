@@ -1,0 +1,39 @@
+name: Deploy to GitHub Pages
+
+# 触发条件：推送到 main 分支时执行
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest  # 使用 Ubuntu 环境
+
+    steps:
+      # 1. 拉取代码到工作流环境
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 安装 Node.js（项目依赖 Node 环境）
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x  # 匹配项目支持的 Node 版本
+
+      # 3. 安装依赖
+      - name: Install dependencies
+        run: npm install
+
+      # 4. 构建项目（生成静态文件到 dist 目录）
+      - name: Build project
+        run: npm run build
+        env:
+          # 若项目依赖环境变量（如 Gemini API Key），在此处传入
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      # 5. 部署到 GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # GitHub 自动生成的令牌
+          publish_dir: ./dist  # 部署 dist 目录下的静态文件
